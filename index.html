@@ -13,7 +13,7 @@
   .logo { font-size: 22px; font-weight: 600; color: #1a1a2e; margin-bottom: 4px; }
   .subtitle { font-size: 14px; color: #6b7280; margin-bottom: 1.5rem; }
   label { font-size: 13px; color: #6b7280; display: block; margin-bottom: 4px; margin-top: 14px; }
-  input[type=text] { width: 100%; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; color: #1a1a2e; background: #fff; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+  input[type=text] { width: 100%; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; color: #1a1a2e; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
   input[type=text]:focus { border-color: #534AB7; box-shadow: 0 0 0 3px rgba(83,74,183,0.12); }
   .btn { width: 100%; padding: 11px; margin-top: 1.5rem; background: #534AB7; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
   .btn:hover { background: #3C3489; }
@@ -21,8 +21,8 @@
   #err-msg { font-size: 13px; color: #dc2626; margin-top: 8px; min-height: 18px; }
   .hint { font-size: 12px; color: #6b7280; margin-top: 10px; padding: 8px 12px; background: #f5f4ff; border-radius: 8px; border-left: 3px solid #534AB7; }
   #chat-header { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-  .header-info .room-name { font-size: 15px; font-weight: 600; color: #1a1a2e; }
-  .header-info .room-sub { font-size: 12px; color: #6b7280; margin-top: 2px; }
+  .room-name { font-size: 15px; font-weight: 600; color: #1a1a2e; }
+  .room-sub { font-size: 12px; color: #6b7280; margin-top: 2px; }
   .status-row { display: flex; align-items: center; gap: 8px; }
   .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #d1d5db; display: inline-block; margin-right: 5px; transition: background 0.3s; }
   .status-dot.online { background: #1D9E75; }
@@ -38,31 +38,29 @@
   .msg-bubble { padding: 9px 13px; border-radius: 14px; font-size: 14px; line-height: 1.5; word-break: break-word; }
   .msg.me .msg-bubble { background: #534AB7; color: #fff; border-bottom-right-radius: 4px; }
   .msg.them .msg-bubble { background: #fff; border: 1px solid #e5e7eb; color: #1a1a2e; border-bottom-left-radius: 4px; }
-  .msg.system .msg-bubble { background: transparent; border: none; font-size: 12px; color: #9ca3af; font-style: italic; }
+  .msg.system .msg-bubble { font-size: 12px; color: #9ca3af; font-style: italic; }
   .msg-time { font-size: 10px; color: #9ca3af; margin-top: 3px; }
   #typing-bar { height: 22px; padding: 2px 18px; font-size: 12px; color: #9ca3af; font-style: italic; flex-shrink: 0; background: #f0f2f5; }
   #input-area { display: flex; gap: 8px; padding: 12px 16px; background: #fff; border-top: 1px solid #e5e7eb; flex-shrink: 0; }
-  #msg-input { flex: 1; padding: 9px 14px; border: 1px solid #d1d5db; border-radius: 22px; font-size: 14px; background: #f9fafb; color: #1a1a2e; outline: none; transition: border-color 0.15s; }
+  #msg-input { flex: 1; padding: 9px 14px; border: 1px solid #d1d5db; border-radius: 22px; font-size: 14px; background: #f9fafb; color: #1a1a2e; outline: none; }
   #msg-input:focus { border-color: #534AB7; background: #fff; box-shadow: 0 0 0 3px rgba(83,74,183,0.1); }
-  #send-btn { width: 40px; height: 40px; border-radius: 50%; background: #534AB7; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s; }
+  #send-btn { width: 40px; height: 40px; border-radius: 50%; background: #534AB7; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   #send-btn:hover { background: #3C3489; }
   #send-btn svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
-  #loading-ably { text-align: center; padding: 1rem; font-size: 13px; color: #6b7280; }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
 </style>
 </head>
 <body>
 
 <div id="login-screen">
-  <div id="loading-ably">Memuat library...</div>
-  <div class="card" id="login-card" style="display:none;">
+  <div class="card">
     <div class="logo">🔐 PrivateChat</div>
     <div class="subtitle">Chat 1-on-1 terenkripsi &amp; private</div>
     <label>Nama kamu</label>
-    <input type="text" id="username" placeholder="mis. Ari" maxlength="20">
+    <input type="text" id="username" placeholder="mis. Ari" maxlength="20" autofocus>
     <label>Kode Room</label>
     <input type="text" id="room-code" placeholder="mis. RAHASIA123" maxlength="30">
-    <div class="hint">💡 Bagikan kode room yang sama ke temanmu. Pesan dienkripsi sebelum dikirim ke server.</div>
+    <div class="hint">💡 Bagikan kode room yang sama ke temanmu. Pesan dienkripsi sebelum dikirim.</div>
     <div id="err-msg"></div>
     <button class="btn" id="join-btn" onclick="joinRoom()">Masuk ke Room →</button>
   </div>
@@ -70,7 +68,7 @@
 
 <div id="chat-screen">
   <div id="chat-header">
-    <div class="header-info">
+    <div>
       <div class="room-name" id="header-room"></div>
       <div class="room-sub" id="header-sub"></div>
     </div>
@@ -92,223 +90,195 @@
   </div>
 </div>
 
-<script>
-// =============================================
-// GANTI DENGAN API KEY ABLY KAMU
-const ABLY_API_KEY = 'Uz23dw.AlLfFQ:c4aMXNnhi2b_xLM0xhhC2hpoPGRXe1JFDstke9niDeo';
-// =============================================
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, push, onChildAdded, onValue, set, remove, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
-function loadAbly(callback) {
-  const urls = [
-    'https://unpkg.com/ably@2/ably.min.js',
-    'https://cdn.jsdelivr.net/npm/ably@2/ably.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/ably/2.3.0/ably.min.js'
-  ];
-  let idx = 0;
-  function tryNext() {
-    if (idx >= urls.length) {
-      document.getElementById('loading-ably').textContent = 'Gagal memuat library Ably. Refresh halaman.';
-      return;
-    }
-    const s = document.createElement('script');
-    s.src = urls[idx++];
-    s.onload = () => {
-      document.getElementById('loading-ably').style.display = 'none';
-      document.getElementById('login-card').style.display = 'block';
-      document.getElementById('username').focus();
-      callback();
-    };
-    s.onerror = () => tryNext();
-    document.head.appendChild(s);
-  }
-  tryNext();
-}
+// ============================================================
+// GANTI DENGAN FIREBASE CONFIG KAMU
+const firebaseConfig = {
+  apiKey: "AIzaSyBa46N_EHA0KzquhgbL_U9uN2ZI33-NoeA",
+  authDomain: "room-chat-386ac.firebaseapp.com",
+  databaseURL: "https://room-chat-386ac-default-rtdb.firebaseio.com",
+  projectId: "room-chat-386ac",
+  storageBucket: "room-chat-386ac.firebasestorage.app",
+  messagingSenderId: "786378115427",
+  appId: "1:786378115427:web:e26839058864755a5f2b56"
+};
+// ============================================================
 
-loadAbly(() => { console.log('Ably loaded OK'); });
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-let ably, channel, presenceChannel;
-let myName = '', myRoom = '';
+let myName = '', myRoom = '', presenceRef = null, typingRef = null;
 let typingTimer = null, partnerTypingTimer = null;
 let historyKey = '';
+let msgListener = null, presenceListener = null, typingListener = null;
 
 function xorEncrypt(text, key) {
-  let result = '';
-  for (let i = 0; i < text.length; i++) result += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-  return btoa(unescape(encodeURIComponent(result)));
+  let r = '';
+  for (let i = 0; i < text.length; i++) r += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+  return btoa(unescape(encodeURIComponent(r)));
 }
-
-function xorDecrypt(encoded, key) {
+function xorDecrypt(enc, key) {
   try {
-    const text = decodeURIComponent(escape(atob(encoded)));
-    let result = '';
-    for (let i = 0; i < text.length; i++) result += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-    return result;
+    const t = decodeURIComponent(escape(atob(enc)));
+    let r = '';
+    for (let i = 0; i < t.length; i++) r += String.fromCharCode(t.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+    return r;
   } catch { return '[pesan tidak terbaca]'; }
-}
-
-function saveHistory(msg) {
-  try {
-    let hist = JSON.parse(localStorage.getItem(historyKey) || '[]');
-    hist.push(msg);
-    if (hist.length > 200) hist = hist.slice(-200);
-    localStorage.setItem(historyKey, JSON.stringify(hist));
-  } catch {}
-}
-
-function loadHistory() {
-  try { return JSON.parse(localStorage.getItem(historyKey) || '[]'); } catch { return []; }
 }
 
 function getTime() {
   return new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 }
 
+function saveHistory(msg) {
+  try {
+    let h = JSON.parse(localStorage.getItem(historyKey) || '[]');
+    h.push(msg); if (h.length > 200) h = h.slice(-200);
+    localStorage.setItem(historyKey, JSON.stringify(h));
+  } catch {}
+}
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(historyKey) || '[]'); } catch { return []; }
+}
+
 function renderMessage(data, isMine) {
   const msgs = document.getElementById('messages');
   const div = document.createElement('div');
-  div.className = 'msg ' + (data.type === 'system' ? 'system' : (isMine ? 'me' : 'them'));
+  div.className = 'msg ' + (data.type === 'system' ? 'system' : isMine ? 'me' : 'them');
   if (data.type !== 'system') {
-    const sender = document.createElement('div');
-    sender.className = 'msg-sender';
-    sender.textContent = data.name;
-    div.appendChild(sender);
+    const s = document.createElement('div'); s.className = 'msg-sender'; s.textContent = data.name; div.appendChild(s);
   }
-  const bubble = document.createElement('div');
-  bubble.className = 'msg-bubble';
-  bubble.textContent = data.text;
-  div.appendChild(bubble);
+  const b = document.createElement('div'); b.className = 'msg-bubble'; b.textContent = data.text; div.appendChild(b);
   if (data.type !== 'system') {
-    const time = document.createElement('div');
-    time.className = 'msg-time';
-    time.textContent = data.time || '';
-    div.appendChild(time);
+    const t = document.createElement('div'); t.className = 'msg-time'; t.textContent = data.time || ''; div.appendChild(t);
   }
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
 }
+function sysMsg(text) { renderMessage({ type: 'system', text }, false); }
 
-function renderSystemMessage(text) { renderMessage({ type: 'system', text }, false); }
-
-function updatePartnerStatus(online, name) {
+function updatePartner(online, name) {
   document.getElementById('partner-dot').classList.toggle('online', online);
   document.getElementById('partner-status').textContent = online ? name + ' online' : 'Menunggu partner...';
 }
 
-function showPartnerTyping(name) {
-  document.getElementById('typing-bar').textContent = name + ' sedang mengetik...';
-  clearTimeout(partnerTypingTimer);
-  partnerTypingTimer = setTimeout(() => { document.getElementById('typing-bar').textContent = ''; }, 2500);
-}
-
-function notifyTyping() {
-  clearTimeout(typingTimer);
-  typingTimer = setTimeout(() => { try { channel.publish('typing', JSON.stringify({ name: myName })); } catch {} }, 300);
-}
-
-async function joinRoom() {
+window.joinRoom = async function() {
   const nameVal = document.getElementById('username').value.trim();
   const roomVal = document.getElementById('room-code').value.trim().toUpperCase();
   const err = document.getElementById('err-msg');
   if (!nameVal) { err.textContent = 'Masukkan nama kamu.'; return; }
   if (!roomVal) { err.textContent = 'Masukkan kode room.'; return; }
-  if (typeof Ably === 'undefined') { err.textContent = 'Library Ably belum termuat. Refresh halaman.'; return; }
 
   const btn = document.getElementById('join-btn');
   btn.disabled = true; btn.textContent = 'Menghubungkan...'; err.textContent = '';
 
   myName = nameVal; myRoom = roomVal;
-  historyKey = 'privatechat_' + btoa(roomVal).replace(/[^a-zA-Z0-9]/g, '');
+  historyKey = 'privatechat_' + btoa(roomVal).replace(/[^a-zA-Z0-9]/g,'');
 
   try {
-    ably = new Ably.Realtime({ key: ABLY_API_KEY, clientId: myName + '_' + Date.now() });
-    await new Promise((resolve, reject) => {
-      ably.connection.once('connected', resolve);
-      ably.connection.once('failed', (err) => reject(err));
-      setTimeout(() => reject(new Error('timeout')), 10000);
+    // Listen messages
+    const msgsRef = ref(db, 'rooms/' + roomVal + '/messages');
+    let firstLoad = true;
+    const hist = loadHistory();
+
+    msgListener = onChildAdded(msgsRef, (snap) => {
+      if (firstLoad) return;
+      const d = snap.val();
+      if (d.name === myName) return;
+      const text = xorDecrypt(d.enc, roomVal);
+      renderMessage({ ...d, text }, false);
+      saveHistory({ ...d, text, mine: false });
+    });
+    firstLoad = false;
+
+    // Presence
+    const roomPresRef = ref(db, 'rooms/' + roomVal + '/presence/' + myName);
+    presenceRef = roomPresRef;
+    await set(roomPresRef, { name: myName, online: true, ts: serverTimestamp() });
+
+    const allPresRef = ref(db, 'rooms/' + roomVal + '/presence');
+    presenceListener = onValue(allPresRef, (snap) => {
+      const data = snap.val() || {};
+      const others = Object.entries(data).filter(([k]) => k !== myName);
+      if (others.length > 0) {
+        const [, v] = others[0];
+        updatePartner(v.online === true, v.name || others[0][0]);
+      } else {
+        updatePartner(false, '');
+      }
     });
 
-    channel = ably.channels.get('privatechat:' + roomVal);
-    channel.subscribe('message', (msg) => {
-      try {
-        const data = JSON.parse(msg.data);
-        if (data.name === myName) return;
-        const text = xorDecrypt(data.enc, roomVal);
-        renderMessage({ ...data, text }, false);
-        saveHistory({ ...data, text, mine: false });
-      } catch {}
-    });
-    channel.subscribe('typing', (msg) => {
-      try {
-        const data = JSON.parse(msg.data);
-        if (data.name !== myName) showPartnerTyping(data.name);
-      } catch {}
+    // Typing
+    const typRef = ref(db, 'rooms/' + roomVal + '/typing');
+    typingRef = ref(db, 'rooms/' + roomVal + '/typing/' + myName);
+    typingListener = onValue(typRef, (snap) => {
+      const d = snap.val() || {};
+      const others = Object.entries(d).filter(([k]) => k !== myName && d[k] === true);
+      if (others.length > 0) {
+        document.getElementById('typing-bar').textContent = others[0][0] + ' sedang mengetik...';
+        clearTimeout(partnerTypingTimer);
+        partnerTypingTimer = setTimeout(() => { document.getElementById('typing-bar').textContent = ''; }, 2500);
+      }
     });
 
-    presenceChannel = ably.channels.get('presence:' + roomVal);
-    presenceChannel.presence.subscribe('enter', (m) => {
-      const n = m.clientId.split('_')[0];
-      if (n !== myName) updatePartnerStatus(true, n);
-    });
-    presenceChannel.presence.subscribe('leave', (m) => {
-      const n = m.clientId.split('_')[0];
-      if (n !== myName) updatePartnerStatus(false, n);
-    });
-    await presenceChannel.presence.enter({ name: myName });
-    const members = await presenceChannel.presence.get();
-    const others = members.filter(m => m.clientId.split('_')[0] !== myName);
-    if (others.length > 0) updatePartnerStatus(true, others[0].clientId.split('_')[0]);
-
+    // Show chat
     document.getElementById('login-screen').style.display = 'none';
-    const cs = document.getElementById('chat-screen');
-    cs.style.display = 'flex';
+    const cs = document.getElementById('chat-screen'); cs.style.display = 'flex';
     document.getElementById('header-room').textContent = '# ' + roomVal;
     document.getElementById('header-sub').textContent = 'Masuk sebagai ' + myName;
 
-    const hist = loadHistory();
     if (hist.length > 0) {
-      renderSystemMessage('— riwayat pesan sebelumnya —');
+      sysMsg('— riwayat pesan sebelumnya —');
       hist.slice(-30).forEach(h => renderMessage(h, h.mine));
-      renderSystemMessage('— sekarang —');
+      sysMsg('— sekarang —');
     } else {
-      renderSystemMessage('Room aman. Mulai percakapan!');
+      sysMsg('Room aman. Mulai percakapan!');
     }
 
     const input = document.getElementById('msg-input');
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-      notifyTyping();
-    });
+    input.onkeydown = (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); window.sendMessage(); }
+      clearTimeout(typingTimer);
+      set(typingRef, true);
+      typingTimer = setTimeout(() => set(typingRef, false), 2000);
+    };
     input.focus();
 
-  } catch (e) {
-    console.error('Ably connection error:', e);
-    err.textContent = 'Gagal terhubung: ' + (e.message || 'Periksa API Key.');
+  } catch(e) {
+    console.error(e);
+    document.getElementById('err-msg').textContent = 'Gagal terhubung: ' + e.message;
     btn.disabled = false; btn.textContent = 'Masuk ke Room →';
-    if (ably) ably.close();
   }
-}
+};
 
-function sendMessage() {
+window.sendMessage = function() {
   const input = document.getElementById('msg-input');
   const text = input.value.trim();
-  if (!text || !channel) return;
+  if (!text) return;
   input.value = '';
   const time = getTime();
   const enc = xorEncrypt(text, myRoom);
-  try { channel.publish('message', JSON.stringify({ name: myName, enc, time })); } catch {}
+  const msgsRef = ref(db, 'rooms/' + myRoom + '/messages');
+  push(msgsRef, { name: myName, enc, time });
   renderMessage({ name: myName, text, time }, true);
   saveHistory({ name: myName, text, time, mine: true });
-}
+  if (typingRef) set(typingRef, false);
+};
 
-function leaveRoom() {
-  if (presenceChannel) try { presenceChannel.presence.leave(); } catch {}
-  if (ably) ably.close();
+window.leaveRoom = function() {
+  if (presenceRef) set(presenceRef, { name: myName, online: false });
+  if (typingRef) set(typingRef, false);
   document.getElementById('chat-screen').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('messages').innerHTML = '';
   document.getElementById('join-btn').disabled = false;
   document.getElementById('join-btn').textContent = 'Masuk ke Room →';
-}
+  myName = ''; myRoom = '';
+};
 </script>
 </body>
 </html>
