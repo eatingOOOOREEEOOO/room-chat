@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PrivateChat</title>
+<script src="https://cdn.jsdelivr.net/npm/ably@2/ably.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f0f2f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+
+  #login-screen { width: 100%; max-width: 420px; padding: 1rem; }
+  #chat-screen { display: none; width: 100%; max-width: 600px; height: 100vh; flex-direction: column; }
+
+  .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .logo { font-size: 22px; font-weight: 600; color: #1a1a2e; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #6b7280; margin-bottom: 1.5rem; }
+
+  label { font-size: 13px; color: #6b7280; display: block; margin-bottom: 4px; margin-top: 14px; }
+  input[type=text] { width: 100%; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; color: #1a1a2e; background: #fff; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+  input[type=text]:focus { border-color: #534AB7; box-shadow: 0 0 0 3px rgba(83,74,183,0.12); }
+
+  .btn { width: 100%; padding: 11px; margin-top: 1.5rem; background: #534AB7; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+  .btn:hover { background: #3C3489; }
+  .btn:disabled { background: #c4c0e8; cursor: not-allowed; }
+  #err-msg { font-size: 13px; color: #dc2626; margin-top: 8px; min-height: 18px; }
+
+  .hint { font-size: 12px; color: #6b7280; margin-top: 10px; padding: 8px 12px; background: #f5f4ff; border-radius: 8px; border-left: 3px solid #534AB7; }
+
+  #chat-header { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .header-info .room-name { font-size: 15px; font-weight: 600; color: #1a1a2e; }
+  .header-info .room-sub { font-size: 12px; color: #6b7280; margin-top: 2px; }
+  .status-row { display: flex; align-items: center; gap: 8px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #d1d5db; display: inline-block; margin-right: 5px; transition: background 0.3s; }
+  .status-dot.online { background: #1D9E75; }
+  #partner-status { font-size: 12px; color: #6b7280; }
+  #leave-btn { font-size: 12px; padding: 5px 12px; background: transparent; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; color: #6b7280; }
+  #leave-btn:hover { background: #f3f4f6; }
+
+  #messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; background: #f0f2f5; }
+  .msg { max-width: 72%; display: flex; flex-direction: column; }
+  .msg.me { align-self: flex-end; align-items: flex-end; }
+  .msg.them { align-self: flex-start; align-items: flex-start; }
+  .msg.system { align-self: center; align-items: center; }
+  .msg-sender { font-size: 11px; color: #9ca3af; margin-bottom: 2px; }
+  .msg-bubble { padding: 9px 13px; border-radius: 14px; font-size: 14px; line-height: 1.5; word-break: break-word; }
+  .msg.me .msg-bubble { background: #534AB7; color: #fff; border-bottom-right-radius: 4px; }
+  .msg.them .msg-bubble { background: #fff; border: 1px solid #e5e7eb; color: #1a1a2e; border-bottom-left-radius: 4px; }
+  .msg.system .msg-bubble { background: transparent; border: none; font-size: 12px; color: #9ca3af; font-style: italic; }
+  .msg-time { font-size: 10px; color: #9ca3af; margin-top: 3px; }
+
+  #typing-bar { height: 22px; padding: 2px 18px; font-size: 12px; color: #9ca3af; font-style: italic; flex-shrink: 0; background: #f0f2f5; }
+
+  #input-area { display: flex; gap: 8px; padding: 12px 16px; background: #fff; border-top: 1px solid #e5e7eb; flex-shrink: 0; }
+  #msg-input { flex: 1; padding: 9px 14px; border: 1px solid #d1d5db; border-radius: 22px; font-size: 14px; background: #f9fafb; color: #1a1a2e; outline: none; transition: border-color 0.15s; }
+  #msg-input:focus { border-color: #534AB7; background: #fff; box-shadow: 0 0 0 3px rgba(83,74,183,0.1); }
+  #send-btn { width: 40px; height: 40px; border-radius: 50%; background: #534AB7; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s; }
+  #send-btn:hover { background: #3C3489; }
+  #send-btn svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="card">
+    <div class="logo">🔐 PrivateChat</div>
+    <div class="subtitle">Chat 1-on-1 terenkripsi &amp; private</div>
+
+    <label>Nama kamu</label>
+    <input type="text" id="username" placeholder="mis. Ari" maxlength="20" autofocus>
+
+    <label>Kode Room</label>
+    <input type="text" id="room-code" placeholder="mis. RAHASIA123" maxlength="30">
+
+    <div class="hint">💡 Bagikan kode room yang sama ke temanmu. Pesan dienkripsi sebelum dikirim ke server.</div>
+
+    <div id="err-msg"></div>
+    <button class="btn" id="join-btn" onclick="joinRoom()">Masuk ke Room →</button>
+  </div>
+</div>
+
+<div id="chat-screen">
+  <div id="chat-header">
+    <div class="header-info">
+      <div class="room-name" id="header-room"></div>
+      <div class="room-sub" id="header-sub"></div>
+    </div>
+    <div class="status-row">
+      <div style="display:flex;align-items:center;">
+        <span class="status-dot" id="partner-dot"></span>
+        <span id="partner-status">Menunggu partner...</span>
+      </div>
+      <button id="leave-btn" onclick="leaveRoom()">Keluar</button>
+    </div>
+  </div>
+  <div id="messages"></div>
+  <div id="typing-bar"></div>
+  <div id="input-area">
+    <input type="text" id="msg-input" placeholder="Ketik pesan..." maxlength="1000">
+    <button id="send-btn" onclick="sendMessage()">
+      <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+// =============================================
+// GANTI DENGAN API KEY ABLY KAMU DI BAWAH INI
+const ABLY_API_KEY = 'GANTI_DENGAN_API_KEY_ABLY_KAMU';
+// =============================================
+
+let ably, channel, presenceChannel;
+let myName = '', myRoom = '';
+let typingTimer = null, partnerTypingTimer = null;
+let historyKey = '';
+
+function xorEncrypt(text, key) {
+  let result = '';
+  for (let i = 0; i < text.length; i++) {
+    result += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+  }
+  return btoa(unescape(encodeURIComponent(result)));
+}
+
+function xorDecrypt(encoded, key) {
+  try {
+    const text = decodeURIComponent(escape(atob(encoded)));
+    let result = '';
+    for (let i = 0; i < text.length; i++) {
+      result += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+    }
+    return result;
+  } catch { return '[pesan tidak terbaca]'; }
+}
+
+function saveHistory(msg) {
+  try {
+    let hist = JSON.parse(localStorage.getItem(historyKey) || '[]');
+    hist.push(msg);
+    if (hist.length > 200) hist = hist.slice(-200);
+    localStorage.setItem(historyKey, JSON.stringify(hist));
+  } catch {}
+}
+
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(historyKey) || '[]'); } catch { return []; }
+}
+
+function getTime() {
+  return new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+}
+
+function renderMessage(data, isMine) {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg ' + (data.type === 'system' ? 'system' : (isMine ? 'me' : 'them'));
+  if (data.type !== 'system') {
+    const sender = document.createElement('div');
+    sender.className = 'msg-sender';
+    sender.textContent = data.name;
+    div.appendChild(sender);
+  }
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  bubble.textContent = data.text;
+  div.appendChild(bubble);
+  if (data.type !== 'system') {
+    const time = document.createElement('div');
+    time.className = 'msg-time';
+    time.textContent = data.time || '';
+    div.appendChild(time);
+  }
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function renderSystemMessage(text) {
+  renderMessage({ type: 'system', text }, false);
+}
+
+function updatePartnerStatus(online, name) {
+  const dot = document.getElementById('partner-dot');
+  const label = document.getElementById('partner-status');
+  dot.classList.toggle('online', online);
+  label.textContent = online ? name + ' online' : 'Menunggu partner...';
+}
+
+function showPartnerTyping(name) {
+  document.getElementById('typing-bar').textContent = name + ' sedang mengetik...';
+  clearTimeout(partnerTypingTimer);
+  partnerTypingTimer = setTimeout(() => { document.getElementById('typing-bar').textContent = ''; }, 2500);
+}
+
+function notifyTyping() {
+  clearTimeout(typingTimer);
+  typingTimer = setTimeout(() => {
+    try { channel.publish('typing', JSON.stringify({ name: myName })); } catch {}
+  }, 300);
+}
+
+async function joinRoom() {
+  const nameVal = document.getElementById('username').value.trim();
+  const roomVal = document.getElementById('room-code').value.trim().toUpperCase();
+  const err = document.getElementById('err-msg');
+
+  if (!nameVal) { err.textContent = 'Masukkan nama kamu.'; return; }
+  if (!roomVal) { err.textContent = 'Masukkan kode room.'; return; }
+
+  const btn = document.getElementById('join-btn');
+  btn.disabled = true; btn.textContent = 'Menghubungkan...'; err.textContent = '';
+
+  myName = nameVal; myRoom = roomVal;
+  historyKey = 'privatechat_' + btoa(roomVal).replace(/[^a-zA-Z0-9]/g,'');
+
+  try {
+    ably = new Ably.Realtime({ key: ABLY_API_KEY, clientId: myName + '_' + Date.now() });
+    await new Promise((resolve, reject) => {
+      ably.connection.once('connected', resolve);
+      ably.connection.once('failed', reject);
+      setTimeout(reject, 8000);
+    });
+
+    channel = ably.channels.get('privatechat:' + roomVal);
+    channel.subscribe('message', (msg) => {
+      try {
+        const data = JSON.parse(msg.data);
+        if (data.name === myName) return;
+        const text = xorDecrypt(data.enc, roomVal);
+        renderMessage({ ...data, text }, false);
+        saveHistory({ ...data, text, mine: false });
+      } catch {}
+    });
+    channel.subscribe('typing', (msg) => {
+      try {
+        const data = JSON.parse(msg.data);
+        if (data.name !== myName) showPartnerTyping(data.name);
+      } catch {}
+    });
+
+    presenceChannel = ably.channels.get('presence:' + roomVal);
+    presenceChannel.presence.subscribe('enter', (m) => {
+      const n = m.clientId.split('_')[0];
+      if (n !== myName) updatePartnerStatus(true, n);
+    });
+    presenceChannel.presence.subscribe('leave', (m) => {
+      const n = m.clientId.split('_')[0];
+      if (n !== myName) updatePartnerStatus(false, n);
+    });
+    await presenceChannel.presence.enter({ name: myName });
+
+    const members = await presenceChannel.presence.get();
+    const others = members.filter(m => m.clientId.split('_')[0] !== myName);
+    if (others.length > 0) updatePartnerStatus(true, others[0].clientId.split('_')[0]);
+
+    document.getElementById('login-screen').style.display = 'none';
+    const cs = document.getElementById('chat-screen');
+    cs.style.display = 'flex';
+    document.getElementById('header-room').textContent = '# ' + roomVal;
+    document.getElementById('header-sub').textContent = 'Masuk sebagai ' + myName;
+
+    const hist = loadHistory();
+    if (hist.length > 0) {
+      renderSystemMessage('— riwayat pesan sebelumnya —');
+      hist.slice(-30).forEach(h => renderMessage(h, h.mine));
+      renderSystemMessage('— sekarang —');
+    } else {
+      renderSystemMessage('Room aman. Mulai percakapan!');
+    }
+
+    const input = document.getElementById('msg-input');
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+      notifyTyping();
+    });
+    input.focus();
+
+  } catch (e) {
+    err.textContent = 'Gagal terhubung. Periksa koneksi atau API Key.';
+    btn.disabled = false; btn.textContent = 'Masuk ke Room →';
+    if (ably) ably.close();
+  }
+}
+
+function sendMessage() {
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if (!text || !channel) return;
+  input.value = '';
+  const time = getTime();
+  const enc = xorEncrypt(text, myRoom);
+  try { channel.publish('message', JSON.stringify({ name: myName, enc, time })); } catch {}
+  renderMessage({ name: myName, text, time }, true);
+  saveHistory({ name: myName, text, time, mine: true });
+}
+
+function leaveRoom() {
+  if (presenceChannel) try { presenceChannel.presence.leave(); } catch {}
+  if (ably) ably.close();
+  document.getElementById('chat-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('messages').innerHTML = '';
+  document.getElementById('join-btn').disabled = false;
+  document.getElementById('join-btn').textContent = 'Masuk ke Room →';
+}
+</script>
+</body>
+</html>
